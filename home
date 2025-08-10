@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>つくたべ - 公式サイト</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      margin: 0;
+      background: #fff;
+      color: #333;
+    }
+    header {
+      background: #005BAC;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    header h1 { margin: 0; }
+    header p { margin: 5px 0 0; font-size: 1.2em; }
+    section { padding: 40px 20px; max-width: 900px; margin: auto; }
+    h2 { color: #005BAC; border-bottom: 2px solid #005BAC; padding-bottom: 5px; }
+    .comment-box {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    button {
+      background: #005BAC;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .comment {
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>つくたべ</h1>
+  <p>Create and execute dreams（夢を創り,実行する）</p>
+</header>
+
+<section>
+  <h2>グループ紹介</h2>
+  <p>つくたべは、2025年10月13日に結成された、学校でのプレゼンを中心に活動するグループです。</p>
+</section>
+
+<section>
+  <h2>活動内容</h2>
+  <ul>
+    <li>学校でのプレゼンテーション</li>
+    <li>学内外イベントでの発表</li>
+  </ul>
+</section>
+
+<section>
+  <h2>ニュース</h2>
+  <p>最新情報をここに掲載します。</p>
+</section>
+
+<section>
+  <h2>コメント</h2>
+  <div class="comment-box">
+    <textarea id="commentInput" placeholder="コメントを入力..."></textarea>
+    <button id="postComment">投稿</button>
+  </div>
+  <div id="commentsList"></div>
+</section>
+
+<script type="module">
+  // Firebase設定
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "SENDER_ID",
+    appId: "APP_ID"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const postBtn = document.getElementById("postComment");
+  const commentInput = document.getElementById("commentInput");
+  const commentsList = document.getElementById("commentsList");
+
+  postBtn.addEventListener("click", async () => {
+    const text = commentInput.value.trim();
+    if (!text) return;
+    await addDoc(collection(db, "comments"), {
+      text,
+      createdAt: serverTimestamp()
+    });
+    commentInput.value = "";
+  });
+
+  const q = query(collection(db, "comments"), orderBy("createdAt", "desc"));
+  onSnapshot(q, (snapshot) => {
+    commentsList.innerHTML = "";
+    snapshot.forEach((doc) => {
+      const div = document.createElement("div");
+      div.className = "comment";
+      div.textContent = doc.data().text;
+      commentsList.appendChild(div);
+    });
+  });
+</script>
+
+</body>
+</html>
